@@ -1,6 +1,6 @@
 import React ,{ useState } from 'react';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
-import './Buscador.css';
+import '../Styles/Buscador.css';
 
 
 

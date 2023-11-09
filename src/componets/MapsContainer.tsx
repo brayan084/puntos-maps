@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { GoogleMap, Marker } from "@react-google-maps/api";
 
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import { db } from '../firebase/config';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where, setDoc  } from "firebase/firestore";
+
 interface MapaProps {
     lugarSeleccionado: { lat: number, lng: number } | null;
 }
@@ -11,8 +16,8 @@ const MapContainer: React.FC<MapaProps> = ({ lugarSeleccionado }) => {
     const imagen1 = require('../imagenes/png-clipart-black-m-marker-maps-black-rim.png')
     const [center, setCenter] = useState<{ lat: number, lng: number }>({ lat: -34.61, lng: -58.38 });
     const [marcadores, setMarcadores] = useState<{ id: number, lat: number, lng: number }[]>([]);
+    const [showDialog, setShowDialog] = useState<boolean>(false);
 
-    
     useEffect(() => {
         if (lugarSeleccionado && lugarSeleccionado.lat === 0 && lugarSeleccionado.lng === 0) {
             // No hago nada jejeje
@@ -23,26 +28,26 @@ const MapContainer: React.FC<MapaProps> = ({ lugarSeleccionado }) => {
         }
     }, [lugarSeleccionado, marcadores]);
 
+    // Guardar la ubicación en la base de datos de Firebase
+    const handleGuardarClick = async () => {
+        try {
+            const docRef = await setDoc(doc(collection(db, "/Usuarios/luciano/Lugares-guardados" ), "punto-interes"), {
+                lat: center.lat,
+                lng: center.lng
+            });
+            console.log("Document written with ID: ", "nombre");
+            setShowDialog(false);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+    }
 
-    // const obtenerDireccion = async (lat: number, lng: number) => {
-    //     try {
-    //         const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=AIzaSyB2w6_RoDhHWxWOWn8Q-FuYjly9mHFPl5s`);
-    //         const data = await response.json();
-    //         if (data.results && data.results.length > 0) {
-    //             const direccion = data.results[0].formatted_address;
-    //             console.log(direccion);
-    //             // Aquí puedes hacer lo que necesites con la dirección obtenida
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
 
     // Filtra los marcadores para eliminar el marcador con el ID especificado
     const handleMarkerClick = (markerId: number) => {
         setMarcadores(marcadores => marcadores.filter(marker => marker.id !== markerId));
     }
-    
+
     // Crea un nuevo marcador con un ID único basado en la fecha y hora actual
     const handleMapClick = (event: google.maps.MapMouseEvent) => {
 
@@ -55,6 +60,11 @@ const MapContainer: React.FC<MapaProps> = ({ lugarSeleccionado }) => {
                 lng: event.latLng.lng(),
             };
             setMarcadores(marcadores => [...marcadores, newMarker]);
+        }
+
+        if (event.latLng) {
+            setCenter({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+            setShowDialog(true);
         }
     }
 
@@ -164,6 +174,18 @@ const MapContainer: React.FC<MapaProps> = ({ lugarSeleccionado }) => {
                         />
                     ))}
                 </GoogleMap>
+                <Dialog visible={showDialog} onHide={() => setShowDialog(false)}>
+                    <h2>Guardar ubicación</h2>
+                    <p>¿Deseas guardar esta ubicación?</p>
+                    <div className="p-grid">
+                        <div className="p-col">
+                            <Button label="Sí" onClick={handleGuardarClick} />
+                        </div>
+                        <div className="p-col">
+                            <Button label="No" onClick={() => setShowDialog(false)} className="p-button-secondary" />
+                        </div>
+                    </div>
+                </Dialog>
             </div>
         </div>
     )
