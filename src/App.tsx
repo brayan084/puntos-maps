@@ -1,24 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
+import MapContainer from './componets/MapsContainer';
+import Buscador from './componets/Buscador';
 
 function App() {
+  const [lugarSeleccionado, setLugarSeleccionado] = useState<{ lat: number, lng: number } | null>({ lat: 0, lng: 0 });
+  
+  const handleLatLngSelect = (latLng: { lat: number, lng: number }) => {
+    const lugar = {lat : latLng.lat, lng : latLng.lng}
+    setLugarSeleccionado(lugar);
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className=''>
+        <Buscador  onLatLngSelect={handleLatLngSelect} />
+        <MapContainer lugarSeleccionado={lugarSeleccionado} />
+      </div>
+
     </div>
   );
 }

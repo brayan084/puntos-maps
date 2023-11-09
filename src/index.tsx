@@ -4,6 +4,12 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+import 'primereact/resources/themes/lara-light-indigo/theme.css';   // Tema lara dark indigo
+import 'primereact/resources/primereact.css';                       // core css
+import 'primeicons/primeicons.css';                                 // icons
+import 'primeflex/primeflex.css';                                   // css utility
+
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
