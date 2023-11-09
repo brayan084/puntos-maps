@@ -7,28 +7,45 @@ interface MapaProps {
 
 const MapContainer: React.FC<MapaProps> = ({ lugarSeleccionado }) => {
 
-    const [puntosInteres, setPuntosInteres] = useState<{ lat: number; lng: number }[]>([]);;
+
+    const imagen1 = require('../imagenes/png-clipart-black-m-marker-maps-black-rim.png')
     const [center, setCenter] = useState<{ lat: number, lng: number }>({ lat: -34.61, lng: -58.38 });
     const [marcadores, setMarcadores] = useState<{ id: number, lat: number, lng: number }[]>([]);
 
-    console.log(puntosInteres)
-    console.log(marcadores)
-
-
+    
     useEffect(() => {
         if (lugarSeleccionado && lugarSeleccionado.lat === 0 && lugarSeleccionado.lng === 0) {
             // No hago nada jejeje
         } else if (lugarSeleccionado) {
-            setPuntosInteres([lugarSeleccionado]);
+            const newPuntoInteres = { id: Date.now(), ...lugarSeleccionado };
+            setMarcadores([...marcadores, newPuntoInteres]);
             setCenter(lugarSeleccionado);
         }
-    }, [lugarSeleccionado]);
+    }, [lugarSeleccionado, marcadores]);
 
+
+    // const obtenerDireccion = async (lat: number, lng: number) => {
+    //     try {
+    //         const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=AIzaSyB2w6_RoDhHWxWOWn8Q-FuYjly9mHFPl5s`);
+    //         const data = await response.json();
+    //         if (data.results && data.results.length > 0) {
+    //             const direccion = data.results[0].formatted_address;
+    //             console.log(direccion);
+    //             // Aquí puedes hacer lo que necesites con la dirección obtenida
+    //         }
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
+
+    // Filtra los marcadores para eliminar el marcador con el ID especificado
     const handleMarkerClick = (markerId: number) => {
         setMarcadores(marcadores => marcadores.filter(marker => marker.id !== markerId));
     }
-
+    
+    // Crea un nuevo marcador con un ID único basado en la fecha y hora actual
     const handleMapClick = (event: google.maps.MapMouseEvent) => {
+
 
         if (event.latLng) {
 
@@ -111,31 +128,44 @@ const MapContainer: React.FC<MapaProps> = ({ lugarSeleccionado }) => {
 
     // styles del contenerdor del mapa
     const styles = {
+        diplay: "flex",
         height: "75vh",
-        width: "70%",
-        margin: "auto",
+        width: "1500px",
+        // margin: "auto",
         marginTop: "50px",
     }
 
-    return  (
-        <GoogleMap
-            mapContainerStyle={styles}
-            center={center}
-            zoom={13}
-            onClick={handleMapClick}
-            options={{
-                // disableDefaultUI: true,
-                styles: mapStyles,
-            }}
-        >
-            {marcadores.map(marker => (
-                <Marker
-                    key={marker.id}
-                    position={{ lat: marker.lat, lng: marker.lng }}
-                    onClick={() => handleMarkerClick(marker.id)}
-                />
-            ))}
-        </GoogleMap>
+    const customMarkerIcon = {
+        // esta imagen no la tengo en la carpeta de imagenes y esta buena
+        // url: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+        url: imagen1,
+        scaledSize: new window.google.maps.Size(30, 30), // Tamaño del ícono personalizado
+    };
+
+    return (
+        <div className="map-container d-flex">
+            <div className="map d-flex">
+                <GoogleMap
+                    mapContainerStyle={styles}
+                    center={center}
+                    zoom={13}
+                    onClick={handleMapClick}
+                    options={{
+                        // disableDefaultUI: true,
+                        styles: mapStyles,
+                    }}
+                >
+                    {marcadores.map(marker => (
+                        <Marker
+                            key={marker.id}
+                            position={{ lat: marker.lat, lng: marker.lng }}
+                            onClick={() => handleMarkerClick(marker.id)}
+                            icon={customMarkerIcon}
+                        />
+                    ))}
+                </GoogleMap>
+            </div>
+        </div>
     )
 }
 

@@ -36,3 +36,17 @@
     transform: rotate(360deg);
   }
 }
+
+.Map-Container {
+  display: flex;
+}
+
+.Marcadores {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  
+
+  margin-top: 20px;
+}
