@@ -1,33 +1,43 @@
-import React, { useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import './App.css';
-import MapContainer from './componets/MapsContainer';
-import Buscador from './componets/Buscador';
-import Marcadores from './componets/Marcadores';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
+import { auth } from './firebase/config';
+
+
+import App2 from './componets/Home';
+import Login from './firebase/LoginAuth';
+
+const PrivateRoute: React.FC<{ redirectPath?: string; children: ReactNode }> = ({ redirectPath = "/", children }) => {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const token = localStorage.getItem("firebaseToken");
+    if (token) {
+      auth.onAuthStateChanged((user) => {
+        if (!user) {
+          navigate(redirectPath);
+        }
+      });
+    } else {
+      navigate(redirectPath);
+    }
+  }, [navigate, redirectPath]);
+
+  return <>{children}</>;
+};
 
 function App() {
-  const [lugarSeleccionado, setLugarSeleccionado] = useState<{ lat: number, lng: number } | null>({ lat: 0, lng: 0 });
-
-  const handleLatLngSelect = (latLng: { lat: number, lng: number }) => {
-    const lugar = { lat: latLng.lat, lng: latLng.lng }
-    setLugarSeleccionado(lugar);
-  }
-
   return (
-    <div className="">
-      <div className=''>
-        <Buscador onLatLngSelect={handleLatLngSelect} />
-      </div>
-      <div className='Map-Container'>
-
-        <MapContainer lugarSeleccionado={lugarSeleccionado} />
-
-        <div className='Marcadores'>
-          <Marcadores />
-        </div>
-      </div>
-
+    <div>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<> <App2 /> </>} />
+          <Route path="/parteprivada" element={<PrivateRoute redirectPath="/">{<App2 />}</PrivateRoute>} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
+
 
 export default App;

@@ -1,0 +1,29 @@
+.Buscador {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 30px 0px 30px;
+}
+
+.card-right {
+    float: right;
+    margin-left: 10px;
+    gap : 10px;
+    margin-top: 20px;
+    /* Agrega un margen izquierdo para separar las tarjetas del mapa */
+}
+
+.Map-Container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.Marcadores {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.map-wrapper {
+    flex: 1;
+}
