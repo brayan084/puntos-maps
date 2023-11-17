@@ -1,41 +1,60 @@
 import { Button } from 'primereact/button';
 import { auth, googleProvider } from "./config";
-import { signInWithPopup} from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 
-function Login() {
+export default function Login() {
 
-    const navigate = useNavigate()
+  // console.trace()
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Variable de estado para controlar el estado de autenticación
+
+  const navigate = useNavigate()
 
 
-    useEffect(() => {
-      if (localStorage.getItem("firebaseToken")) {
-        navigate("/parteprivada")
-      }
-     }
-    )
-    const handleLogin = async () => {
-      try {
-        const a = await signInWithPopup(auth, googleProvider)
-        console.log(a.user)
-        // localStorage.setItem("firebaseToken", a._tokenResponse.idToken)
-        localStorage.setItem("firebaseToken", await a.user?.getIdToken())
-        localStorage.setItem("user", JSON.stringify(a.user))
-        navigate("/parteprivada")  
-      } catch (error) {
-        console.log(error)
-      }
+  useEffect(() => {
+    if (localStorage.getItem("firebaseToken")) {
+      setIsLoggedIn(true);
+      navigate("/parteprivada")
     }
-    
-      return (
-        <div className='flex justify-content-start mt-5' >
-          <div className='card flex justify-content-center'>
-            <Button onClick={handleLogin} label='Iniciar sesión con Google' />
-          </div>
-        </div>
-      );
-}
+  }, [isLoggedIn, navigate]);
+  const handleLogin = async () => {
+    try {
+      const a = await signInWithPopup(auth, googleProvider)
+      console.log(a.user)
+      // localStorage.setItem("firebaseToken", a._tokenResponse.idToken)
+      localStorage.setItem("firebaseToken", await a.user?.getIdToken())
+      localStorage.setItem("user", JSON.stringify(a.user))
+      window.location.reload();
+      navigate("/parteprivada")
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
-export default Login;
+  const handleLogout = () => {
+    localStorage.removeItem("firebaseToken");
+    setIsLoggedIn(false); // Establecer el estado de autenticación cuando el usuario cierre sesión
+    // Otro código necesario para cerrar sesión si es necesario
+    window.location.reload();
+  };
+
+  if (isLoggedIn) {
+    return (
+      <div className='flex justify-content-start'>
+        <div className='card flex justify-content-center'>
+          <Button onClick={handleLogout} label='Cerrar sesión' /> {/* Botón para cerrar sesión */}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className='flex justify-content-start' >
+      <div className='card flex justify-content-center'>
+        <Button onClick={handleLogin} label='Iniciar sesión con Google' />
+      </div>
+    </div>
+  );
+}

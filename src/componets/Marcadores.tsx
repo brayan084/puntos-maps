@@ -5,6 +5,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 
 export default function Marcadores() {
+    // console.trace()
     const [visible, setVisible] = useState<boolean>(false);
 
     return (

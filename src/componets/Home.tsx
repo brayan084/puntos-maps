@@ -1,61 +1,65 @@
-import React, { useState } from 'react';
+// import React, { useEffect, useState } from 'react';
 import MapContainer from './MapsContainer';
-import Buscador from './Buscador';
-import Marcadores from './Marcadores';
-import Login from '../firebase/LoginAuth';
+// import Marcadores from './Marcadores';
+// import Login from '../firebase/LoginAuth';
 
 import '../Styles/Home.css';
-import { Card } from 'primereact/card';
+// import { Card } from 'primereact/card';
+// import { collection, getDocs } from 'firebase/firestore';
+// import { db } from '../firebase/config';
 
 
-function App2() {
-    const [lugarSeleccionado, setLugarSeleccionado] = useState<{ lat: number, lng: number } | null>({ lat: 0, lng: 0 });
+export default function App2() {
+    // console.trace()
+    // const [marcadores, setMarcadores] = useState<{ id: number, lat: number, lng: number }[]>([]);
 
-    const handleLatLngSelect = (latLng: { lat: number, lng: number }) => {
-        const lugar = { lat: latLng.lat, lng: latLng.lng }
-        setLugarSeleccionado(lugar);
-    }
+
+    // useEffect(() => {
+    //     fetchDocument();
+    // }, [])
+
+    // const fetchDocument = async () => {
+
+    //     try {
+    //         const collectionRef = collection(db, "/Usuarios/luciano/Lugares-guardados");
+    //         const querySnapshot = await getDocs(collectionRef);
+
+    //         console.log(querySnapshot.docs);
+
+    //         setMarcadores(querySnapshot.docs.map(doc => ({
+    //             id: Number(doc.id),
+    //             lat: doc.data().lat,
+    //             lng: doc.data().lng
+    //         })));
+
+    //     } catch (error) {
+    //         console.error(error);
+    //         // Manejar el error...
+    //     }
+
+    // };
 
     return (
         <div className="mb-5">
 
-            <div className='Buscador'>
-                <Login />
-                <div className='flex'>
-                    <Buscador onLatLngSelect={handleLatLngSelect} />
-                </div>
-            </div>
+
             <div className='Map-Container'>
                 <div className="map-wrapper">
-                    <MapContainer lugarSeleccionado={lugarSeleccionado} />
+                    <MapContainer />
 
                 </div>
 
-                <div className='Marcadores'>
-                    <Card title="Title" className="card-right">
-                        <p className="m-0">
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed consequuntur error repudiandae
-                            numquam deserunt quisquam repellat libero asperiores earum nam nobis, culpa ratione quam perferendis esse, cupiditate neque quas!
-                        </p>
-                    </Card>
-                    <Card title="Title" className="card-right">
-                        <p className="m-0">
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed consequuntur error repudiandae
-                            numquam deserunt quisquam repellat libero asperiores earum nam nobis, culpa ratione quam perferendis esse, cupiditate neque quas!
-                        </p>
-                    </Card>
-                    <Card title="Title" className="card-right">
-                        <p className="m-0">
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Inventore sed consequuntur error repudiandae
-                            numquam deserunt quisquam repellat libero asperiores earum nam nobis, culpa ratione quam perferendis esse, cupiditate neque quas!
-                        </p>
-                    </Card>
-                    {/* <Marcadores /> */}
-                </div>
+                {/* <div className='Marcadores'>
+                    {marcadores.map((item) => (
+
+                        <Card title="soy un lugar" className="card-right">
+                            <span className="m-0">Lat: {item.lat}</span>
+                            <span className="m-0">Lng: {item.lng}</span>
+                        </Card>
+                    ))}
+                </div> */}
             </div>
 
         </div>
     );
 }
-
-export default App2;

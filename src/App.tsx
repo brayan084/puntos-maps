@@ -1,13 +1,15 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import './App.css';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { auth } from './firebase/config';
 
 
 import App2 from './componets/Home';
-import Login from './firebase/LoginAuth';
+// import Login from './firebase/LoginAuth';
 
-const PrivateRoute: React.FC<{ redirectPath?: string; children: ReactNode }> = ({ redirectPath = "/", children }) => {
+const PrivateRoute: React.FC<{ redirectPath?: string; children: ReactNode }> = ({ redirectPath = "/", children }, ref) => {
+  // console.trace()
+  
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -26,7 +28,7 @@ const PrivateRoute: React.FC<{ redirectPath?: string; children: ReactNode }> = (
   return <>{children}</>;
 };
 
-function App() {
+export default function App() {
   return (
     <div>
       <BrowserRouter>
@@ -40,4 +42,3 @@ function App() {
 }
 
 
-export default App;
