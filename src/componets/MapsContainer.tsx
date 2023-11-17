@@ -129,6 +129,7 @@ export default function MapContainer() {
         setMarcadoresON(marcadoresON => marcadoresON.filter(marker => marker.id !== markerId));
     }
 
+    // funciones para hacer aparecer la barra del scroll de la lista de marcadores
     const handleMouseEnter = () => {
         setIsHovered(true);
     };
@@ -136,6 +137,10 @@ export default function MapContainer() {
     const handleMouseLeave = () => {
         setIsHovered(false);
     };
+
+    const handleCardClick = (lat: number, lng: number) => {
+        setCenter({ lat, lng, adress: '' });
+    }
 
     // styles del mapa como por ejemplo las marcas de restaurantes
     const mapStyles: google.maps.MapTypeStyle[] = [
@@ -232,30 +237,35 @@ export default function MapContainer() {
                 </div>
                 <div className="">
                     <h1>Buscador de Lugares</h1>
-                    <PlacesAutocomplete
-                        value={direccion}
-                        onChange={setDireccion}
-                        onSelect={handleSelect}
-                    >
-                        {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-                            <div style={{ width: '300px' }}>
-                                <input
-                                    {...getInputProps({
-                                        placeholder: 'Buscar lugares...',
-                                        className: 'buscador-input',
-                                    })}
-                                />
-                                <div className="sugerencias-container">
-                                    {loading && <div>Cargando...</div>}
-                                    {suggestions.map((suggestion, index) => (
-                                        <div {...getSuggestionItemProps(suggestion)} key={index} className="sugerencia-item">
-                                            {suggestion.description}
-                                        </div>
-                                    ))}
+                    <div className="buscador-wrapper">
+                        <PlacesAutocomplete
+                            value={direccion}
+                            onChange={setDireccion}
+                            onSelect={handleSelect}
+                        >
+                            {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+                                <div style={{ width: '300px' }}>
+                                    <input
+                                        {...getInputProps({
+                                            placeholder: 'Buscar lugares...',
+                                            className: 'buscador-input',
+                                        })}
+                                    />
+                                    <div className="sugerencias-container">
+                                        {loading && <div>Cargando...</div>}
+                                        {suggestions.map((suggestion, index) => (
+                                            <div {...getSuggestionItemProps(suggestion)} key={index} className="sugerencia-item">
+                                                {suggestion.description}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </PlacesAutocomplete>
+                            )}
+                        </PlacesAutocomplete>
+                        <button className="limpiar-boton" onClick={() => setDireccion('')}>
+                            Limpiar
+                        </button>
+                    </div>
                 </div>
             </div>
             <div className="Map-Container">
@@ -293,13 +303,16 @@ export default function MapContainer() {
                     </Dialog>
                 </div>
                 <div className='Marcadores'>
-                    <div style={{ height: '75vh', overflow: isHovered ? 'auto' : 'hidden', borderRadius: '15px' }} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+                    <div style={{ height: '75vh', overflow: isHovered ? 'auto' : 'hidden', borderRadius: '15px' }}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    >
                         {/* <h1>Marcadores</h1> */}
                         {marcadoresON.map((item, index) => (
 
-                            <Card title="soy un lugar" className="card-right w-full" key={index}>
+                            <Card title={item.adress.split(',')[0]} className="card-right w-full" key={index} onClick={() => handleCardClick(item.lat, item.lng)}>
 
-                                <span className="m-0" >Direccion: {item.adress} </span>
+                                <span className="m-0"  >Direccion: {item.adress} </span>
                                 <br />
                                 <span className="m-0" >Lat: {item.lat}</span>
                                 <br />
