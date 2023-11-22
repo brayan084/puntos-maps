@@ -16,7 +16,7 @@ export default function Login() {
   useEffect(() => {
     if (localStorage.getItem("firebaseToken")) {
       setIsLoggedIn(true);
-      navigate("/parteprivada")
+      navigate("/")
     }
   }, [isLoggedIn, navigate]);
   const handleLogin = async () => {
@@ -27,7 +27,7 @@ export default function Login() {
       localStorage.setItem("firebaseToken", await a.user?.getIdToken())
       localStorage.setItem("user", JSON.stringify(a.user))
       window.location.reload();
-      navigate("/parteprivada")
+      navigate("/")
     } catch (error) {
       console.log(error)
     }
@@ -35,6 +35,7 @@ export default function Login() {
 
   const handleLogout = () => {
     localStorage.removeItem("firebaseToken");
+    localStorage.removeItem("user");
     setIsLoggedIn(false); // Establecer el estado de autenticación cuando el usuario cierre sesión
     // Otro código necesario para cerrar sesión si es necesario
     window.location.reload();
@@ -44,7 +45,7 @@ export default function Login() {
     return (
       <div className='flex justify-content-start'>
         <div className='card flex justify-content-center'>
-          <Button onClick={handleLogout} label='Cerrar sesión' /> {/* Botón para cerrar sesión */}
+          <Button onClick={handleLogout} icon='pi pi-google' label='Cerrar sesión' className='p-button-rounded' severity='danger'  /> {/* Botón para cerrar sesión */}
         </div>
       </div>
     );
@@ -53,7 +54,7 @@ export default function Login() {
   return (
     <div className='flex justify-content-start' >
       <div className='card flex justify-content-center'>
-        <Button onClick={handleLogin} label='Iniciar sesión con Google' />
+        <Button onClick={handleLogin} icon='pi pi-google' className='p-button-rounded' severity='success' label='Iniciar sesión con Google'   />
       </div>
     </div>
   );

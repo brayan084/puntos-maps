@@ -18,22 +18,45 @@
   border-radius: 15px;
 }
 
+.Marcadores h3 {
+  display: flex;
+  width: auto;
+  border-radius: 15px;
+  padding: 0px 10px 0px 10px;
+  height: 3rem;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 0 0;
+  color: #495057;
+  background-color: #ffffff;
+}
+
+.card-title h3 {
+  display: flex;
+  width: 100%;
+  padding: 0px 0px 0px 5px;
+  justify-content: start;
+
+}
+
+.card-title h3:hover {
+  cursor: pointer;
+  background-color: #ebb7b7ce;
+  border-radius: 15px;
+
+}
+
 .map-wrapper {
   flex: 1;
 }
 
 
-/* Styles de Buscador */
-
 
 /* styles del botón de limpiar */
-.buscador-wrapper {
-  display: flex;
-  align-items: center;
-}
+
 
 .limpiar-boton {
-  margin-left: 10px;
+  margin: 0px 10px 0px 0px;
   padding: 8px 12px;
   font-size: 14px;
   border: none;
@@ -43,49 +66,83 @@
 }
 
 .limpiar-boton:hover {
-  background-color: #aaa;
+  background-color: #e66464;
 }
 
 /* Styles del input */
 
+.buscador-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  position: relative;
+  z-index: 1;
+  margin: 20px 20px 0px 20px;
+}
+
 .buscador-input {
   width: 100%;
   padding: 10px;
-  font-size: 16px;
+  font-size: 18px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 15px;
 }
 
 .sugerencias-container {
-  position: absolute;
+  position: relative;
   top: 100%;
   left: 0;
   z-index: 999;
-  /* padding: 5px; */
   cursor: pointer;
   background-color: #f9f9f9;
-  /* border: 1px solid #ccc; */
   border-top: none;
   width: 100%;
-  max-height: 600px; /* Establece una altura máxima deseada */
-  overflow-y: auto; /* Activa el desplazamiento vertical */
+  border-radius: 5px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+
 }
 
 .sugerencia-item {
   position: relative;
-  /* padding: 5px; */
+  padding: 10px;
   cursor: pointer;
   background-color: #f9f9f9;
-  /* border: 1px solid #ccc; */
+  border: 1px solid #ccc;
   border-top: none;
+  transition: background-color 0.3s ease;
 }
 
 .sugerencia-item:hover {
-  background-color: #e9e9e9;
+  background-color: #ebb7b7;
 }
 
-.buscador-wrapper {
-  position: relative;
+
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  margin-left: 1000px;
+}
+
+.titulo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0px 0px 0px 0px;
+}
+
+.titulo{
+  padding: 20px 20px 20px 20px;
+  border-radius: 10px;
+  background-color: #f1f1f1;
+  color: #495057;
 }
 
 
@@ -93,19 +150,23 @@
 
 /* Estilos personalizados para la barra de desplazamiento */
 ::-webkit-scrollbar {
-  width: 8px; /* Ancho de la barra de desplazamiento */
+  width: 8px;
+  /* Ancho de la barra de desplazamiento */
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Color de fondo de la barra de desplazamiento */
+  background: #f1f1f1;
+  /* Color de fondo de la barra de desplazamiento */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888; /* Color del pulgar de la barra de desplazamiento */
+  background: #888;
+  /* Color del pulgar de la barra de desplazamiento */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; /* Color del pulgar de la barra de desplazamiento al pasar el cursor sobre él */
+  background: #555;
+  /* Color del pulgar de la barra de desplazamiento al pasar el cursor sobre él */
 }
 
 .sugerencias-container {
@@ -124,3 +185,6 @@
   border-top: none;
 } */
 
+.custom-dialog .dialog-content {
+  width: 300px; /* Ajusta el valor según tus necesidades */
+}

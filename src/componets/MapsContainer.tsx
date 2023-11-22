@@ -6,9 +6,10 @@ import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import { db } from '../firebase/config';
-import { collection, getDocs, doc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { ScrollTop } from 'primereact/scrolltop';
 import { Card } from "primereact/card";
+import { Skeleton } from 'primereact/skeleton';
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from "react-places-autocomplete";
 import Login from "../firebase/LoginAuth";
 
@@ -21,38 +22,51 @@ export default function MapContainer() {
 
     const imagen1 = require('../imagenes/png-clipart-black-m-marker-maps-black-rim.png')
     const [center, setCenter] = useState<{ lat: number, lng: number, adress: string }>({ lat: -34.61, lng: -58.38, adress: '' });
+    const [zoom, setZoom] = useState(13);
     const [marcadoresON, setMarcadoresON] = useState<{ id: number, lat: number, lng: number, adress: string }[]>([]);
     // console.log(marcadoresON);
     const [showDialog, setShowDialog] = useState<boolean>(false);
     const [isHovered, setIsHovered] = useState(false);
     const toast = useRef<Toast>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const usuarioStorage = localStorage.getItem("user")
     const usuario = usuarioStorage ? JSON.parse(usuarioStorage) : null;
 
     // Se encarga de traer todos los marcadores guardados del usuario y mostrarlos en el mapa
+
     useEffect(() => {
-        const fetchDocument = async () => {
 
-            try {
-                const collectionRef = collection(db, `/Usuarios/${usuario.displayName}/Lugares-guardados`);
-                const querySnapshot = await getDocs(collectionRef);
+        if (usuarioStorage) {
+            const fetchDocument = async () => {
+                try {
+                    const collectionRef = collection(db, `/Usuarios/${usuario.displayName}/Lugares-guardados`);
+                    const querySnapshot = await getDocs(collectionRef);
 
 
-                setMarcadoresON(querySnapshot.docs.map(doc => ({
-                    id: parseInt(doc.data().id),
-                    lat: doc.data().lat,
-                    lng: doc.data().lng,
-                    adress: doc.data().adress
-                })));
+                    setMarcadoresON(querySnapshot.docs.map(doc => ({
+                        id: parseInt(doc.data().id),
+                        lat: doc.data().lat,
+                        lng: doc.data().lng,
+                        adress: doc.data().adress
+                    })));
+                    setIsLoading(false);
 
-            } catch (error) {
-                console.error(error);
-            }
-        };
 
-        fetchDocument();
-    }, [usuario.displayName]);
+                } catch (error) {
+                    console.error(error);
+                }
+            };
+
+            fetchDocument();
+        }
+
+        if (!usuarioStorage) {
+            setIsLoading(false);
+        }
+
+    }, []);
+
     // Dato curioso si se le pasa 'usuario' a las dependencias del useEffect, cuando se marca y no se guarda el punto de interés, se borra.
     // Pero cuando se le pasa 'usuario.displayName' a las dependencias del useEffect, cuando se marca y no se guarda el punto de interés, no se borra.
 
@@ -66,18 +80,45 @@ export default function MapContainer() {
 
     // Guardar la ubicación en la base de datos de Firebase
     const GuardarMarkerDB = async () => {
-        try {
-            await setDoc(doc(collection(db, `/Usuarios/${usuario.displayName}/Lugares-guardados`)/* , "punto-interes" */), {
-                id: Date.now(),
-                lat: center.lat,
-                lng: center.lng,
-                adress: center.adress
-            });
-            console.log('Document Save');
+
+        if (usuarioStorage) {
+            try {
+                await setDoc(doc(collection(db, `/Usuarios/${usuario.displayName}/Lugares-guardados`), Date.now().toString()), {
+                    id: Date.now(),
+                    lat: center.lat,
+                    lng: center.lng,
+                    adress: center.adress
+                });
+                console.log('Document Save');
+                setShowDialog(false);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+
+        } else {
             setShowDialog(false);
-        } catch (e) {
-            console.error("Error adding document: ", e);
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Por favor inicia sesion para guardar los puntos de interés' });
         }
+    }
+
+    // Filtra los marcadores para eliminar el marcador con el ID especificado
+    const handleDeleteMarker = async (markerId: number) => {
+
+        if (usuarioStorage) {
+            try {
+                console.log(markerId);
+                const docRef = doc(db, `/Usuarios/${usuario.displayName}/Lugares-guardados/${markerId}`);
+                await deleteDoc(docRef);
+                console.log('Marker Deleted');
+                // Actualiza el estado de los marcadores para reflejar el cambio en la base de datos
+                setMarcadoresON(marcadoresON => marcadoresON.filter(marker => marker.id !== markerId));
+            } catch (error) {
+                console.error(error);
+            }
+        } else {
+            setMarcadoresON(marcadoresON => marcadoresON.filter(marker => marker.id !== markerId));
+        }
+
     }
 
     // Esta funcion se encarga de traducir la ubicacion de string a coordenadas y guardarla en la base de datos (si es que se desea)
@@ -123,12 +164,6 @@ export default function MapContainer() {
         AddMarker(event.latLng?.lat() || 0, event.latLng?.lng() || 0);
     }
 
-    // Filtra los marcadores para eliminar el marcador con el ID especificado
-    const handleMarkerClick = (markerId: number) => {
-        // aqui podria agregar logica para eliminar el marcador con el ID especificad, con solo tocar el mapa
-        setMarcadoresON(marcadoresON => marcadoresON.filter(marker => marker.id !== markerId));
-    }
-
     // funciones para hacer aparecer la barra del scroll de la lista de marcadores
     const handleMouseEnter = () => {
         setIsHovered(true);
@@ -140,6 +175,7 @@ export default function MapContainer() {
 
     const handleCardClick = (lat: number, lng: number) => {
         setCenter({ lat, lng, adress: '' });
+        setZoom(15);
     }
 
     // styles del mapa como por ejemplo las marcas de restaurantes
@@ -231,96 +267,150 @@ export default function MapContainer() {
         <div>
             <Toast ref={toast} />
 
-            <div className="flex flex-row flex-wrap " >
-                <div className="">
-                    <Login />
+            <div className="container">
+                <div className="titulo-container">
+                    <h1 className="titulo">GUARDA TUS PUNTOS DE INTERES</h1>
                 </div>
-                <div className="">
-                    <h1>Buscador de Lugares</h1>
-                    <div className="buscador-wrapper">
-                        <PlacesAutocomplete
-                            value={direccion}
-                            onChange={setDireccion}
-                            onSelect={handleSelect}
-                        >
-                            {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-                                <div style={{ width: '300px' }}>
-                                    <input
-                                        {...getInputProps({
-                                            placeholder: 'Buscar lugares...',
-                                            className: 'buscador-input',
-                                        })}
-                                    />
-                                    <div className="sugerencias-container">
-                                        {loading && <div>Cargando...</div>}
-                                        {suggestions.map((suggestion, index) => (
-                                            <div {...getSuggestionItemProps(suggestion)} key={index} className="sugerencia-item">
-                                                {suggestion.description}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </PlacesAutocomplete>
-                        <button className="limpiar-boton" onClick={() => setDireccion('')}>
-                            Limpiar
-                        </button>
-                    </div>
+                <div className="login-container">
+                    <Login />
                 </div>
             </div>
             <div className="Map-Container">
+                {/* aqui esta el mapa y adentro del mapa esta el buscador  */}
                 <div className="map-wrapper">
                     <GoogleMap
                         mapContainerStyle={styles}
                         center={center}
-                        zoom={13}
+                        zoom={zoom}
                         onClick={handleMapClick}
                         options={{
                             // disableDefaultUI: true,
                             styles: mapStyles,
+                            fullscreenControl: false,
                         }}
                     >
+                        {/* El buscador */}
+                        <div className="buscador-wrapper">
+                            <button className="limpiar-boton" onClick={() => setDireccion('')}>
+                                Limpiar
+                            </button>
+                            <PlacesAutocomplete
+                                value={direccion}
+                                onChange={setDireccion}
+                                onSelect={handleSelect}
+                            >
+                                {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+                                    <div style={{ width: '300px' }}>
+                                        <input
+                                            {...getInputProps({
+                                                placeholder: 'Buscar lugares...',
+                                                className: 'buscador-input',
+                                            })}
+                                        />
+                                        <div className="sugerencias-container">
+                                            {loading && <div>Cargando...</div>}
+                                            {suggestions.map((suggestion, index) => (
+                                                <div {...getSuggestionItemProps(suggestion)} key={index} className="sugerencia-item">
+                                                    {suggestion.description}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </PlacesAutocomplete>
+                        </div>
+                        {/* Las marcas que realiza el user */}
                         {marcadoresON.map(marker => (
                             <Marker
                                 key={marker.id}
                                 position={{ lat: marker.lat, lng: marker.lng }}
-                                onClick={() => handleMarkerClick(marker.id)}
+                                onClick={() => handleDeleteMarker(marker.id)}
                                 icon={customMarkerIcon}
                             />
                         ))}
                     </GoogleMap>
-                    <Dialog visible={showDialog} onHide={() => setShowDialog(false)}>
-                        <h2>Guardar ubicación</h2>
-                        <p>¿Deseas guardar esta ubicación?</p>
-                        <div className="p-grid">
-                            <div className="p-col">
-                                <Button label="Sí" onClick={GuardarMarkerDB} />
+
+                    <div>
+                        <Dialog visible={showDialog} header="Guardar ubicación" showHeader={false} onHide={() => setShowDialog(false)} className="custom-dialog">
+                            <div className="dialog-content">
+                                {/* <h2 className="dialog-title">Guardar ubicación</h2> */}
+                                <h2 className="dialog-message mb-3">¿Deseas guardar esta ubicación?</h2>
+                                <div className="button-container">
+                                    <Button label="Sí" onClick={GuardarMarkerDB} className="p-button-success" />
+                                    <Button label="Solo ver la marca" onClick={() => setShowDialog(false)} className="p-button-secondary ml-2" />
+                                </div>
                             </div>
-                            <div className="p-col">
-                                <Button label="No" onClick={() => setShowDialog(false)} className="p-button-secondary" />
-                            </div>
-                        </div>
-                    </Dialog>
+                        </Dialog>
+                    </div>
+
                 </div>
                 <div className='Marcadores'>
                     <div style={{ height: '75vh', overflow: isHovered ? 'auto' : 'hidden', borderRadius: '15px' }}
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     >
-                        {/* <h1>Marcadores</h1> */}
-                        {marcadoresON.map((item, index) => (
+                        <div className="card w-full m-0 md:w-10rem lg:w-22rem flex justify-content-center p-0">
+                            <h3>Puntos de Interes</h3>
+                        </div>
+                        {isLoading ? (
+                            // Mostrar el skeleton mientras los marcadores están cargando
+                            <div className="border-round border-1 surface-border p-4 surface-card">
+                                <div className="flex mb-3">
+                                    <Skeleton shape="circle" size="4rem" className="mr-2"></Skeleton>
+                                    <div>
+                                        <Skeleton width="10rem" className="mb-2"></Skeleton>
+                                        <Skeleton width="5rem" className="mb-2"></Skeleton>
+                                        <Skeleton height=".5rem"></Skeleton>
+                                    </div>
+                                </div>
+                                <Skeleton width="100%" height="150px"></Skeleton>
+                                <div className="flex justify-content-between mt-3">
+                                    <Skeleton width="4rem" height="2rem"></Skeleton>
+                                    <Skeleton width="4rem" height="2rem"></Skeleton>
+                                </div>
 
-                            <Card title={item.adress.split(',')[0]} className="card-right w-full" key={index} onClick={() => handleCardClick(item.lat, item.lng)}>
+                                <br className="mt-3" />
 
-                                <span className="m-0"  >Direccion: {item.adress} </span>
-                                <br />
-                                <span className="m-0" >Lat: {item.lat}</span>
-                                <br />
-                                <span className="m-0" >Lng: {item.lng}</span>
-                            </Card>
-                        ))}
+                                <div className="flex mb-3">
+                                    <Skeleton shape="circle" size="4rem" className="mr-2"></Skeleton>
+                                    <div>
+                                        <Skeleton width="10rem" className="mb-2"></Skeleton>
+                                        <Skeleton width="5rem" className="mb-2"></Skeleton>
+                                        <Skeleton height=".5rem"></Skeleton>
+                                    </div>
+                                </div>
+                                <Skeleton width="100%" height="150px"></Skeleton>
+                                <div className="flex justify-content-between mt-3">
+                                    <Skeleton width="4rem" height="2rem"></Skeleton>
+                                    <Skeleton width="4rem" height="2rem"></Skeleton>
+                                </div>
+                            </div>
+                        ) : (
+                            // Mostrar las cards una vez que se hayan cargado los marcadores
+                            <div>
+                                {marcadoresON.map((item, index) => (
+
+                                    <Card className="card-right w-full" key={index}>
+
+                                        <div className="card-title" onClick={() => handleCardClick(item.lat, item.lng)}>
+                                            <h3>{item.adress.split(',')[0]}</h3>
+                                        </div>
+
+                                        <span className="m-0"  >Direccion: {item.adress} </span>
+                                        <br />
+                                        <span className="m-0" >Lat: {item.lat}</span>
+                                        <br />
+                                        <span className="m-0" >Lng: {item.lng}</span>
+
+                                        <div className="flex justify-content-end">
+                                            <Button icon="pi pi-trash" severity="danger" onClick={() => (handleDeleteMarker(item.id))} />
+                                        </div>
+                                    </Card>
+                                ))}
+                                <ScrollTop target="parent" threshold={100} className="w-2rem h-2rem border-round bg-primary" icon="pi pi-arrow-up text-base" />
+                            </div>
+                        )}
                         <ScrollTop target="parent" threshold={100} className="w-2rem h-2rem border-round bg-primary" icon="pi pi-arrow-up text-base" />
-                        {/* <Marcadores /> */}
                     </div>
                 </div>
             </div>
